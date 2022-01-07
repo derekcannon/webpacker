@@ -27,7 +27,8 @@ class Webpacker::Env
 
     def available_environments
       if config_path.exist?
-        YAML.load(config_path.read).keys
+        yml_opts = Gem::Version.new(Psych::VERSION) >= Gem::Version.new('4') ? { aliases: true } : {}
+        YAML.load(config_path.read, **yml_opts).keys
       else
         [].freeze
       end

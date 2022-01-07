@@ -88,8 +88,13 @@ class Webpacker::Configuration
       @data ||= load
     end
 
+    def yml_load_opts
+      @yml_load_opts ||=
+        Gem::Version.new(Psych::VERSION) >= Gem::Version.new('4') ? { aliases: true } : {}
+    end
+
     def load
-      YAML.load(config_path.read)[env].deep_symbolize_keys
+      YAML.load(config_path.read, **yml_load_opts)[env].deep_symbolize_keys
 
     rescue Errno::ENOENT => e
       raise "Webpacker configuration file not found #{config_path}. " \
@@ -104,7 +109,9 @@ class Webpacker::Configuration
 
     def defaults
       @defaults ||= \
-        HashWithIndifferentAccess.new(YAML.load_file(File.expand_path("../../install/config/webpacker.yml", __FILE__))[env])
+        HashWithIndifferentAccess.new(
+          YAML.load_file(File.expand_path("../../install/config/webpacker.yml", __FILE__), **yml_load_opts)[env]
+        )
     end
 
     def globbed_path_with_extensions(path)
